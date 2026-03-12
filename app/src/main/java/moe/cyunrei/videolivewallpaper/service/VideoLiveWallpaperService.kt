@@ -3,8 +3,11 @@ package moe.cyunrei.videolivewallpaper.service
 import android.app.WallpaperManager
 import android.content.*
 import android.media.MediaPlayer
+import android.net.Uri
 import android.service.wallpaper.WallpaperService
+import android.util.Log
 import android.view.SurfaceHolder
+import androidx.core.content.ContextCompat
 import java.io.File
 import java.io.IOException
 
@@ -20,36 +23,64 @@ class VideoLiveWallpaperService : WallpaperService() {
                 this@VideoLiveWallpaperService.openFileInput("video_live_wallpaper_file_path")
                     .bufferedReader().readText()
             val intentFilter = IntentFilter(VIDEO_PARAMS_CONTROL_ACTION)
-            registerReceiver(object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    val action = intent.getBooleanExtra(KEY_ACTION, false)
-                    if (action) {
-                        mediaPlayer!!.setVolume(0f, 0f)
-                    } else {
-                        mediaPlayer!!.setVolume(1.0f, 1.0f)
+            ContextCompat.registerReceiver(
+                this@VideoLiveWallpaperService,
+                object : BroadcastReceiver() {
+                    override fun onReceive(context: Context, intent: Intent) {
+                        val action = intent.getBooleanExtra(KEY_ACTION, false)
+                        mediaPlayer?.let {
+                            if (action) {
+                                it.setVolume(0f, 0f)
+                            } else {
+                                it.setVolume(1.0f, 1.0f)
+                            }
+                        }
                     }
-                }
-            }.also { broadcastReceiver = it }, intentFilter)
+                }.also { broadcastReceiver = it },
+                intentFilter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
 
         override fun onSurfaceCreated(holder: SurfaceHolder) {
             super.onSurfaceCreated(holder)
             mediaPlayer = MediaPlayer().apply {
                 setSurface(holder.surface)
-                setDataSource(videoFilePath)
+                try {
+                    val uri = Uri.parse(videoFilePath)
+                    if (uri.scheme == "content" || uri.scheme == "file") {
+                        setDataSource(this@VideoLiveWallpaperService, uri)
+                    } else {
+                        setDataSource(videoFilePath)
+                    }
+                } catch (e: Exception) {
+                    Log.e("VideoLiveWallpaper", "Error setting data source: ${e.message}")
+                    return
+                }
+                
                 isLooping = true
                 setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
-                prepare()
-                start()
-            }
-            try {
-                val file = File("$filesDir/unmute")
-                if (file.exists()) mediaPlayer!!.setVolume(1.0f, 1.0f) else mediaPlayer!!.setVolume(
-                    0f,
-                    0f
-                )
-            } catch (e: IOException) {
-                e.printStackTrace()
+                
+                setOnPreparedListener { mp ->
+                    try {
+                        val file = File(filesDir, "unmute")
+                        if (file.exists()) mp.setVolume(1.0f, 1.0f) else mp.setVolume(0f, 0f)
+                        mp.start()
+                    } catch (e: Exception) {
+                        Log.e("VideoLiveWallpaper", "Error starting playback: ${e.message}")
+                    }
+                }
+                
+                setOnErrorListener { _, what, extra ->
+                    Log.e("VideoLiveWallpaper", "MediaPlayer error: $what, $extra")
+                    true // error handled
+                }
+
+                try {
+                    prepareAsync()
+                } catch (e: Exception) {
+                    Log.e("VideoLiveWallpaper", "Error in prepareAsync: ${e.message}")
+                }
             }
         }
 

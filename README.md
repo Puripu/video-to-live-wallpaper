@@ -1,24 +1,31 @@
-# Video Live Wallpaper
+# Video Live Wallpaper (2026 Modernized)
+
 ## Introduction  
-This is a video live wallpaper application with very low memory usage and has extremely small package size.
-> :warning: Only compatible with **Android Original System**
+A lightweight, high-performance video live wallpaper application modernized for 2026 standards. It features extremely low memory usage, a tiny package size, and a sleek modern UI.
+
+> [!IMPORTANT]
+> Optimized for Android 15 (SDK 35) and later, while maintaining compatibility with older versions.
 
 ## Application Information
-Application name: Video Live Wallpaper  
-Package name: com.cyunrei.videolivewallpaper  
-Platform: Android  
-Support Android version: 5.0+  
-Language: English/简体中文  
-Version: 0.1.4.4_200811_nano
-## Update Log
-### Changes
-- Support Android 10+ 
-- Add video wallpaper music (on/off) options
-- Add hide application icon options 
-### Bugfixes
-- Set wallpaper multiple times case video stop
-- Crash after selected video on Android 10
-- Black screen after set wallpaper on Android 10
-- Crash after selected video below Android 8.0
-## Application Preview
+- **Application Name**: Video Live Wallpaper  
+- **Package Name**: `moe.cyunrei.videolivewallpaper`  
+- **Platform**: Android  
+- **Min SDK**: 24 (Android 7.0)  
+- **Target SDK**: 35 (Android 15)
+- **Language**: English/简体中文  
+- **Stack**: Kotlin 2.0, Jetpack Compose, Material 3, Edge-to-Edge UI
+
+## Update Log (2026 Modernization)
+- **UI Rewrite**: Completely migrated to **Jetpack Compose** with Material 3 design.
+- **Modern Performance**: Upgraded to **Kotlin 2.0.0** and **Gradle 8.7**.
+- **Enhanced Compatibility**: Fully supports Android 15 and edge-to-edge layouts.
+- **Stability**: Fixed legacy crashes related to file selection and SDK compatibility.
+
+## Development
+To build the project:
+```bash
+./gradlew assembleDebug
+```
+
+## Preview  
 ![](https://github.com/Cyunrei/Video-Live-Wallpaper/blob/master/preview.gif)
